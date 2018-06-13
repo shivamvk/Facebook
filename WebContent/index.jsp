@@ -4,63 +4,98 @@
 <%@ page import="java.util.*" %>
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css">
-  <link rel="stylesheet" type="text/css" href="facebook.css">
-  <script src="https://code.jquery.com/jquery-latest.js"></script>
-  <script>
-    $(document).ready(function(){
-    	<%
-		if(session.getAttribute("sessionMessage") != null){
-			%>
-			var message = '<%=session.getAttribute("sessionMessage")%>';
-			alert(message);
-			<%
-			session.setAttribute("sessionMessage", null);
-		}
-		%>
-        $('.navbarlinks').css("color","grey");
-        $('.navbarlinks').hover(
-          function(){
-            $(this).css("color","blue");
-          },
-          function(){
-            $(this).css("color","grey");
-          }
-        );
-    });
-    function showSuggestions(name){
-    	$.ajax({
-		    url : "ShowSuggestions?term=" + name,
-		    type : "GET",
-		    async : true,
-		    success : function(data) {
-		    	if(data != ""){
-		    		var option = document.createElement('option');
-		    		var datalist = document.getElementById('datalistnames');
-		            option.value = data;
-		            while(datalist.firstChild){
-		            	datalist.removeChild(datalist.firstChild);
-		            }
-					datalist.appendChild(option);
-				}
-		    }
-		});
-    }
-  </script>
-  <title>Facebook</title>
-</head>
-<body>
 <%
 if(session.getAttribute("sessionEmail") == null){
 	response.sendRedirect("LoginSignup.jsp");
 	return;
 }
 %>
-
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="index.css">
+  <script src="https://code.jquery.com/jquery-latest.js"></script>
+  <script>
+    $(document).ready(function(){
+    	<%
+    	if(request.getParameter("userEmail").equals(session.getAttribute("sessionEmail").toString())){
+    		%>
+    		$("#changedpbutton").css("display","block");
+    		$('.editdetailsbutton').css("display","block");
+    		$('.sendfriendrequestbutton').css("display","none");
+    		<%
+    	} else{
+    		%>
+    		$("#changedpbutton").css("display","none");
+    		$('.editdetailsbutton').css("display","none");
+    		$('.sendfriendrequestbutton').css("display","block");
+    		<%
+    	}
+    	%>
+    	$('.navbarlinks').css("color","#ffffff");
+        $('.navbarlinks').hover(
+          function(){
+            $(this).css("color","#000000");
+          },
+          function(){
+            $(this).css("color","#ffffff");
+          }
+        );
+        $('.postname').css("color","#000000");
+        $('.postname').hover(
+          function(){
+            $(this).css("color","blue");
+          },
+          function(){
+            $(this).css("color","#000000");
+          }
+        );
+        $('.navbarsearchbutton').css("color","blue");
+        $('.navbarsearchbutton').css("background-color","#ffffff");
+        $('.navbarsearchbutton').hover(
+          function(){
+            $(this).css("color","#ffffff");
+            $(this).css("background-color","blue");
+          },
+          function(){
+            $(this).css("color","blue");
+            $(this).css("background-color","#ffffff");
+          }
+        );
+    });
+    function showSuggestions(name){
+    	if(name!=""){
+    		$.ajax({
+    		    url : "ShowSuggestions?term=" + name,
+    		    type : "GET",
+    		    async : true,
+    		    success : function(data) {
+    		    	if(data != ""){
+    		    		var array = data.split(",");
+    		    		var selectList = document.getElementById("datalist");
+    		    		while (selectList.hasChildNodes()) {
+    		    			selectList.removeChild(selectList.lastChild);
+    		    		}
+    		    		for (var i = 0; i < array.length; i++) {
+    		    		    var option = document.createElement("option");
+    		    		    option.value = array[i];
+    		    		    option.text = array[i];
+    		    		    selectList.appendChild(option);
+    		    		}
+    				}
+    		    }
+    		});
+    	}
+    }
+    function changedpclicked(){
+    	document.getElementById("changedpfilebutton").click();
+    }
+  </script>
+  <title>Facebook</title>
+</head>
+<body>
 <%!
 public String getName(String email){
 	String name = "";
@@ -80,17 +115,49 @@ public String getName(String email){
 	return name;
 }
 %>
-
-<style>
-.modal-dialog{
-    overflow-y: initial !important
+<%!
+public ArrayList<String> getFriends(String email, HttpSession session){
+	ArrayList<String> friends = new ArrayList<>();
+	try{
+		Class.forName("com.mysql.jdbc.Driver");
+		Connection con = DriverManager.getConnection("jdbc:mysql://localhost/facebook?user=root&password=test123");
+		PreparedStatement statement = con.prepareStatement("SELECT * FROM FRIENDREQUEST WHERE (SENDERSEMAIL=? OR RECEIVERSEMAIL=?) AND REQUESTSTATUS='ACCEPTED'");
+		statement.setString(1, email);
+		statement.setString(2, email);
+		ResultSet rs = statement.executeQuery();
+		while(rs.next()){
+			if(rs.getString(2).equals(email)){
+				friends.add(rs.getString(3));
+			} else {
+				friends.add(rs.getString(2));
+			}
+		}
+		con.close();
+	} catch(Exception e){
+		return friends;
+	}
+	return friends;
 }
-.modal-body{
-    max-height: 360px;
-    overflow-y: auto;
+%>
+<%!
+public String getLikedByNames(String postId){
+	String name = "";
+	try{
+		Class.forName("com.mysql.jdbc.Driver");
+		Connection con = DriverManager.getConnection("jdbc:mysql://localhost/facebook?user=root&password=test123");
+		PreparedStatement statement = con.prepareStatement("select * from likes where postId=?");
+		statement.setString(1, postId);
+		ResultSet rs = statement.executeQuery();
+		while(rs.next()){
+			name += getName(rs.getString(2)) + "," + " ";
+		}
+		con.close();
+	} catch(Exception e){
+		return name;
+	}
+	return name;
 }
-</style>
-
+%>
 <!--Friend Request Modal -->
 <div class="modal fade" id="friendrequestmodal" tabindex="-1" role="dialog" aria-labelledby="friendrequestmodal" aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -190,9 +257,51 @@ public String getName(String email){
     </div>
   </div>
 </div>
+<%
+Class.forName("com.mysql.jdbc.Driver");
+Connection con5 = DriverManager.getConnection("jdbc:mysql://localhost/facebook?user=root&password=test123");
+PreparedStatement statement5 = con5.prepareStatement("select * from users where email=?");
+statement5.setString(1, request.getParameter("userEmail"));
+ResultSet rs5 = statement5.executeQuery();
+rs5.next();
+%>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-  <a class="navbar-brand" href=""><img src="images/facebooklogo.png" height="40px" width="270px"></a>
+<!--Edit Details Modal -->
+<div class="modal fade" id="editdetailsmodal" tabindex="-1" role="dialog" aria-labelledby="editdetailsmodal" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editdetailsmodal">Edit details</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <form action="UpdateProfile" method="get">
+        <div class="form-group">
+        	<label for="studentat">Student at:</label>
+        	<input value="<%=rs5.getString(10) %>" id="studentat" value="" type="text" name="studentAt" class="form-control" placeholder="Your school" required="required">
+        </div>
+        <div class="form-group">
+        	<label for="worksat">Works at:</label>
+        	<input value="<%=rs5.getString(11) %>" id="worksat" value="" type="text" name="worksAt" class="form-control" placeholder="Your work place" required="required">
+        </div>
+        <div class="form-group">
+        	<label for="address">Address:</label>
+        	<input value="<%=rs5.getString(9) %>" id="address" value="" type="text" name="address" class="form-control" placeholder="Your address" required="required">
+        </div>
+      </div>
+      <div class="modal-footer">
+      	<button type="submit" class="btn btn-info btn-md">Update</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+<%con5.close(); %>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-info fixed-top">
+  <a class="navbar-brand" href=""><img src="images/facebooklogowhite.png" height="40px" width="270px"></a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -203,7 +312,7 @@ public String getName(String email){
     </ul>
     <ul class="navbar-nav justify-content-end">
       <li class="nav-item">
-        <a href="" class="nav-link js-scroll-trigger"><span style="color: blue;" class="nav-font"><b>Home</b></span></a>
+        <a href="" class="nav-link js-scroll-trigger"><span style="color: #000000;" class="nav-font"><b>Home</b></span></a>
       </li>
       <li class="nav-item">
         <a data-toggle="modal" data-target="#friendrequestmodal" class="nav-link js-scroll-trigger"><span class="nav-font navbarlinks"><b>Friend Requests</b></span></a>
@@ -213,136 +322,147 @@ public String getName(String email){
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <span style="font-weight: bold;" class="navbarlinks"><%=getName(session.getAttribute("sessionEmail").toString()) %>'s Profile</span>
+          <span style="font-weight: bold;" class="navbarlinks"><%=session.getAttribute("sessionName").toString() %>'s Profile</span>
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="ProfilePage.jsp?userEmail=<%=session.getAttribute("sessionEmail").toString()%>">View Profile</a>
           <a data-toggle="modal" data-target="#editprofilemodal" class="dropdown-item" href="">Edit Profile</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="Logout">Logout</a>
         </div>
       </li>
     </ul>
-    <datalist id="datalistnames">
-	</datalist>
+    <datalist id="datalist">
+    </datalist>
     &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
     &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
     <form class="form-inline my-2 my-lg-0">
-      <input list="datalistnames" class="form-control mr-sm-2" onkeyup="" type="text" placeholder="Type a name here" aria-label="Search" required="">
-      <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Send Request</button>
+      <input list="datalist" class="form-control mr-sm-2" onkeyup="showSuggestions(this.value)" type="text" placeholder="Type a name here" aria-label="Search" required="">
+      <div id="suggestionbox">
+      </div>
+      <button class="btn navbarsearchbutton my-2 my-sm-0" type="submit">Send Request</button>
     </form>
   </div>
 </nav>
+<br><br><br>
 
-<br><br>
-<br><br>
-
-<div class="container">
-	<div class="card" style="margin-left:5%; margin-right:5%">
-	  <div class="card-body">
-	  	<form action="UploadPost" method="get">
-	  		<textarea placeholder="What's on your mind?" style="resize: none; width:100%; height:100px" class="form-control" name="postMessage" required=""></textarea>
-	  </div>
-	  <div class="card-footer">
-	  		<button type="submit" class="btn btn-info btn-md">Post</button>
-	  	</form>
-	  </div>
-	</div>
-</div>
-
-<br>
-<%!
-public ArrayList<String> getFriends(String email, HttpSession session){
-	ArrayList<String> friends = new ArrayList<>();
-	try{
-		Class.forName("com.mysql.jdbc.Driver");
-		Connection con = DriverManager.getConnection("jdbc:mysql://localhost/facebook?user=root&password=test123");
-		PreparedStatement statement = con.prepareStatement("SELECT * FROM FRIENDREQUEST WHERE (SENDERSEMAIL=? OR RECEIVERSEMAIL=?) AND REQUESTSTATUS='ACCEPTED'");
-		statement.setString(1, session.getAttribute("sessionEmail").toString());
-		statement.setString(2, session.getAttribute("sessionEmail").toString());
-		ResultSet rs = statement.executeQuery();
-		while(rs.next()){
-			if(rs.getString(2).equals(session.getAttribute("sessionEmail").toString())){
-				friends.add(rs.getString(3));
-			} else {
-				friends.add(rs.getString(2));
-			}
-		}
-		con.close();
-	} catch(Exception e){
-		return friends;
-	}
-	return friends;
-}
-%>
-<%!
-public String getLikedByNames(String postId){
-	String name = "";
-	try{
-		Class.forName("com.mysql.jdbc.Driver");
-		Connection con = DriverManager.getConnection("jdbc:mysql://localhost/facebook?user=root&password=test123");
-		PreparedStatement statement = con.prepareStatement("select * from likes where postId=?");
-		statement.setString(1, postId);
-		ResultSet rs = statement.executeQuery();
-		while(rs.next()){
-			name += getName(rs.getString(2)) + "," + " ";
-		}
-	} catch(Exception e){
-		return name;
-	}
-	return name;
-}
-%>
 <%
-ArrayList<String> friends = new ArrayList<>();
-friends = getFriends(session.getAttribute("sessionEmail").toString(), session);
-friends.add(session.getAttribute("sessionEmail").toString());
-Class.forName("com.mysql.jdbc.Driver");
-Connection con1 = DriverManager.getConnection("jdbc:mysql://localhost/facebook?user=root&password=test123");
-PreparedStatement statement1 = con1.prepareStatement("select * from wallposts order by id desc");
-ResultSet rs1 = statement1.executeQuery();
-while(rs1.next()){
-	if(friends.contains(rs1.getString(1))){
-		%>
-			<div class="container">
-				<div class="card" style="margin-left:5%; margin-right:5%">
+      Class.forName("com.mysql.jdbc.Driver");
+	  Connection con3 = DriverManager.getConnection("jdbc:mysql://localhost/facebook?user=root&password=test123");
+	  PreparedStatement statement3 = con3.prepareStatement("select * from users where email=?");
+	  statement3.setString(1, request.getParameter("userEmail"));
+	  ResultSet rs3 = statement3.executeQuery();
+	  rs3.next();
+%>
+<div class="container">
+    <div class="row profile">
+		<div class="col-md-3">
+			<div class="profile-sidebar" style="padding: 5px;">
+				<!-- SIDEBAR USERPIC -->
+				<div class="profile-userpic text-center">
+				<br>
+					<%String profilepicpath = "images\\"
+					                           + request.getParameter("userEmail") + "\\profilepicture.jpg?" + Math.random(); %>
+					<img onclick="changedpclicked()" src="<%=profilepicpath %>" class="img-responsive" alt=""><p></p>
+					<div id="changedpbutton">
+						<form  ENCTYPE="multipart/form-data" ACTION="fileupload.jsp" METHOD=POST>
+					       <input id="changedpfilebutton" style="display:none;" type="file" name="f1" required>
+					       <input class="btn btn-info btn-sm" type="submit" value="Upload">
+					
+					    </form>
+					</div>
+				</div>
+				<!-- END SIDEBAR USERPIC -->
+				<!-- SIDEBAR USER TITLE -->
+				<div class="profile-usertitle">
+					<div class="profile-usertitle-name">
+						<%=getName(request.getParameter("userEmail")) %>
+						<p><%=request.getParameter("userEmail") %></p>
+					</div>
+					<br>
+					<div class="profile-usertitle-job">
+						<span style="color:#000000; font-weight:bold">Address:</span> <%=rs3.getString(9) %>
+					</div>
+					<div class="profile-usertitle-job">
+						<span style="color:#000000; font-weight:bold">Student at:</span> <%=rs3.getString(10) %>
+					</div>
+					<div class="profile-usertitle-job">
+						<span style="color:#000000; font-weight:bold">Works at:</span> <%=rs3.getString(11) %>
+					</div>
+				</div>
+				<div class="profile-userbuttons editdetailsbutton">
+					<button data-toggle="modal" data-target="#editdetailsmodal" type="button" class="btn btn-danger btn-sm">Edit details</button>
+				</div>
+				<div class="profile-userbuttons sendfriendrequestbutton">
+					<button type="button" class="btn btn-danger btn-sm">Add as friend</button>
+				</div>
+				<br>
+			</div>
+		</div>
+		<%con3.close(); %>
+		<div class="col-md-9 postsection">
+            <div class="profile-content">
+				<div class="card" style="">
 				  <div class="card-body">
-				  	<h6 onclick="window.location.assign('ProfilePage.jsp?userEmail=<%=rs1.getString(1) %>')" class="card-title navbarlinks"><%=getName(rs1.getString(1)) %></h6>
-					<h6 class="card-text"><%=rs1.getString(2) %></h6>
-					<p>Liked By: <span class="text-muted"><%=getLikedByNames(rs1.getString(5)) %></span></p>
-					<a href="LikePost?postId=<%=rs1.getInt(5) %>&calledBy=index.jsp" class="btn btn-info btn-sm"><span style="color:#ffffff">Like Post</span></a>
+				  	<form action="UploadPost" method="get">
+				  		<textarea placeholder="What's on your mind?" style="border:none; resize: none; width:100%; height:100px" class="form-control" name="postMessage" required=""></textarea>
 				  </div>
-				  <div class="card-footer" style="max-height:130px; overflow-y: scroll;">
-				  <%
-				  Class.forName("com.mysql.jdbc.Driver");
-				  Connection con3 = DriverManager.getConnection("jdbc:mysql://localhost/facebook?user=root&password=test123");
-				  PreparedStatement statement3 = con3.prepareStatement("select * from comments where postId=? order by commentId desc");
-				  statement3.setString(1, rs1.getString(5));
-				  ResultSet rs3 = statement3.executeQuery();
-				  while(rs3.next()){
-					  %>
-					  	<p class="card-subtitle"><span onclick="window.location.assign('ProfilePage.jsp?userEmail=<%=rs3.getString(2) %>')"  style="font-weight:bold"><%=getName(rs3.getString(2)) %></span>: <%=rs3.getString(3) %></p>
-					  	<p></p>
-					  <%
-				  }
-				  %>
-				  		
-						<form action="CommentPost" method="get" class="form-inline">
-						<input type="text" value="<%=rs1.getString(5)%>" readonly="readonly" name="postId" style="display:none;">
-						<input type="text" value="index.jsp" readonly="readonly" name="calledBy" style="display:none;">
-							<input style="width:85%;" class="form-control mr-auto" type="text" placeholder="Write your comment here" required="required" name="commentMessage">
-							<button class="btn btn-sm btn-info" type="submit">Comment</button>
-						</form>
+				  <div class="card-footer">
+				  		<button type="submit" class="btn btn-info btn-md">Post</button>
+				  	</form>
 				  </div>
 				</div>
-			</div>
-			
-			<br><br>
-		<%
-	}
-}
-con1.close();
-%>
+				<br>
+				<%
+				ArrayList<String> friends = new ArrayList<>();
+				friends = getFriends(request.getParameter("userEmail"), session);
+				friends.add(request.getParameter("userEmail"));
+				Class.forName("com.mysql.jdbc.Driver");
+				Connection con1 = DriverManager.getConnection("jdbc:mysql://localhost/facebook?user=root&password=test123");
+				PreparedStatement statement1 = con1.prepareStatement("select * from wallposts order by id desc");
+				ResultSet rs1 = statement1.executeQuery();
+				while(rs1.next()){
+					if(friends.contains(rs1.getString(1))){
+						%>
+						<div class="card">
+						  <div class="card-body">
+						  	<h6 onclick="window.location.assign('index.jsp?userEmail=<%=rs1.getString(1) %>')" class="card-title postname"><%=getName(rs1.getString(1)) %></h6>
+							<h6 class="card-text"><%=rs1.getString(2) %></h6>
+							<p>Liked By: <span class="text-muted"><%=getLikedByNames(rs1.getString(5)) %></span></p>
+							<a href="LikePost?postId=<%=rs1.getInt(5) %>&calledBy=index.jsp?userEmail=<%=request.getParameter("userEmail") %>" class="btn btn-info btn-sm"><span style="color:#ffffff">Like Post</span></a>
+						  </div>
+						  <div class="card-footer" style="max-height:130px; overflow-y: scroll;">
+						  <%
+						  Class.forName("com.mysql.jdbc.Driver");
+						  Connection con6 = DriverManager.getConnection("jdbc:mysql://localhost/facebook?user=root&password=test123");
+						  PreparedStatement statement6 = con6.prepareStatement("select * from comments where postId=? order by commentId desc");
+						  statement6.setString(1, rs1.getString(5));
+						  ResultSet rs6 = statement6.executeQuery();
+						  while(rs6.next()){
+						  %>
+						  <p class="card-subtitle"><span style="font-weight:bold;"><%=getName(rs6.getString(2)) %>:</span> <%=rs6.getString(3) %></p>
+						  <p></p>
+						  <%
+						  }
+						  %>
+					       <form action="CommentPost" method="get" class="form-inline">
+							<input type="text" value="<%=rs1.getString(5)%>" readonly="readonly" name="postId" style="display:none;">
+							<input type="text" value="index.jsp?userEmail=<%=session.getAttribute("sessionEmail") %>" readonly="readonly" name="calledBy" style="display:none;">
+								<input style="width:85%;" class="form-control mr-auto" type="text" placeholder="Write your comment here" required="required" name="commentMessage">
+								<button class="btn btn-sm btn-info" type="submit">Comment</button>
+						   </form>
+						  </div>
+						</div><br>
+						<%
+					}
+				}
+				%>
+            </div>
+		</div>
+	</div>
+</div>
+<%con1.close(); %>
+<br>
+<br>
 
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.slim.js"></script>
