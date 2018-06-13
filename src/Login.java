@@ -1,5 +1,4 @@
 
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -39,11 +38,10 @@ public class Login extends HttpServlet {
 				session.setAttribute("sessionLastName", rs.getString(2));
 				session.setAttribute("sessionEmail", rs.getString(3));
 				con.close();
-				response.sendRedirect("index.jsp");
+				response.getWriter().write("ok");
 			} else {
-				session.setAttribute("sessionMessage", "Invalid email or password");
 				con.close();
-				response.sendRedirect("LoginSignup.jsp");
+				response.getWriter().write("not");
 			}
 		} catch(Exception e) {
 			

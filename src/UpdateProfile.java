@@ -30,7 +30,7 @@ public class UpdateProfile extends HttpServlet {
 			statement.setString(4, session.getAttribute("sessionEmail").toString());
 			statement.executeUpdate();
 			session.setAttribute("sessionMessage", "Details updated");
-			response.sendRedirect("ProfilePage.jsp?userEmail=" + session.getAttribute("sessionEmail").toString());
+			response.sendRedirect("index.jsp?userEmail=" + session.getAttribute("sessionEmail").toString());
 		} catch(Exception e) {
 			
 		}

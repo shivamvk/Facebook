@@ -18,14 +18,14 @@ public class ShowSuggestions extends HttpServlet {
 	private static final long serialVersionUID = 1L;
    
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String buffer="";
+		String buffer = "";
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			Connection con = DriverManager.getConnection("jdbc:mysql://localhost/facebook?user=root&password=test123");
 			PreparedStatement statement = con.prepareStatement("select * from users where firstName like '%"+ request.getParameter("term") + "%'");
 			ResultSet rs = statement.executeQuery();
 			while(rs.next()) {
-				buffer += rs.getString(1) + " " + rs.getString(2) + "<br>";
+				buffer += rs.getString(1) + " " + rs.getString(2) + ",";
 			}
 			response.getWriter().println(buffer);
 			con.close();

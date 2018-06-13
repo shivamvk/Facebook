@@ -35,8 +35,8 @@ public class UpdateDetails extends HttpServlet {
 			statement.setString(8, request.getParameter("email"));
 			statement.executeUpdate();
 			con.close();
-			session.setAttribute("sessionMessage", "Details Updated");
-			response.sendRedirect("index.jsp");
+			session.setAttribute("sessionMessage", "Details updated!");
+			response.sendRedirect("index.jsp?userEmail=" + session.getAttribute("sessionEmail"));
 		} catch(Exception e) {
 			
 		}

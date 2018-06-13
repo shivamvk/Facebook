@@ -1,5 +1,8 @@
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.*;
 import java.sql.DriverManager;
@@ -32,9 +35,8 @@ public class Signup extends HttpServlet {
 			statement.setString(1, request.getParameter("email"));
 			ResultSet rs = statement.executeQuery();
 			if(rs.next()) {
-				session.setAttribute("sessionMessage", "Email already exists");
 				con.close();
-				response.sendRedirect("LoginSignup.jsp");
+				response.getWriter().write("not");
 			} else {
 				PreparedStatement statement1 = con.prepareStatement("insert into users(firstName,lastName,email,password,dobDay,dobYear,dobMonth,gender)"
 						+ " values(?,?,?,?,?,?,?,?)");
@@ -51,7 +53,24 @@ public class Signup extends HttpServlet {
 				session.setAttribute("sessionLastName", request.getParameter("lastName"));
 				session.setAttribute("sessionEmail", request.getParameter("email"));
 				con.close();
-				response.sendRedirect("index.jsp");
+				File file = new File("C:\\Users\\hp\\eclipse-workspace\\Facebook\\WebContent\\images" + "\\" + request.getParameter("email"));
+				file.mkdir();
+				String path = "";
+				if(request.getParameter("gender").equals("Male")) {
+					path = "C:\\Users\\hp\\eclipse-workspace\\Facebook\\WebContent\\images" + "\\placeholderboy.jpg";
+				} else {
+					path = "C:\\Users\\hp\\eclipse-workspace\\Facebook\\WebContent\\images" + "\\placeholdergirl.jpg";
+				}
+				FileInputStream fis = new FileInputStream(path);
+				FileOutputStream fos = new FileOutputStream("C:\\Users\\hp\\eclipse-workspace\\Facebook\\WebContent\\images"
+						+ "\\" + request.getParameter("email") + "\\profilepicture.jpg");
+				int i;
+				while((i=fis.read())!=-1) {
+					fos.write(i);
+				}
+				fis.close();
+				fos.close();
+				response.getWriter().write("ok");
 			}
 		} catch(Exception e) {
 			

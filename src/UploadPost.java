@@ -32,7 +32,7 @@ public class UploadPost extends HttpServlet {
 			statement.setString(3, dtf.format(now));
 			statement.executeUpdate();
 			session.setAttribute("sessionMessage", "Your post is now live!");
-			response.sendRedirect("index.jsp");
+			response.sendRedirect("index.jsp?userEmail="+session.getAttribute("sessionEmail"));
 		} catch(Exception e) {
 			
 		}
