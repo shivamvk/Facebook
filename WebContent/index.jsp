@@ -16,6 +16,19 @@ if(session.getAttribute("sessionEmail") == null){
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="index.css">
+  <style>
+.profile-sidebar
+	{
+		-moz-box-shadow: 0 0 40px #ccc;
+		-webkit-box-shadow: 0 0 40px #ccc;
+		box-shadow: 0 0 40px #ccc;
+	}
+.wallpostsshadow{
+-moz-box-shadow: 0 0 30px #ccc;
+		-webkit-box-shadow: 0 0 30px #ccc;
+		box-shadow: 0 0 30px #ccc;
+}
+</style>
   <script src="https://code.jquery.com/jquery-latest.js"></script>
   <script>
     $(document).ready(function(){
@@ -401,7 +414,7 @@ rs5.next();
 		<%con3.close(); %>
 		<div class="col-md-9 postsection">
             <div class="profile-content">
-				<div class="card" style="">
+				<div class="card wallpostsshadow" style="">
 				  <div class="card-body">
 				  	<form action="UploadPost" method="get">
 				  		<textarea placeholder="What's on your mind?" style="border:none; resize: none; width:100%; height:100px" class="form-control" name="postMessage" required=""></textarea>
@@ -423,7 +436,7 @@ rs5.next();
 				while(rs1.next()){
 					if(friends.contains(rs1.getString(1))){
 						%>
-						<div class="card">
+						<div class="card wallpostsshadow">
 						  <div class="card-body">
 						  	<h6 onclick="window.location.assign('index.jsp?userEmail=<%=rs1.getString(1) %>')" class="card-title postname"><%=getName(rs1.getString(1)) %></h6>
 							<h6 class="card-text"><%=rs1.getString(2) %></h6>
