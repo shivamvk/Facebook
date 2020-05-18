@@ -214,7 +214,7 @@ public String getLikedByNames(String postId){
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="editprofilemodal">Friend Request</h5>
+        <h5 class="modal-title" id="editprofilemodal">Edit Profile</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -348,8 +348,8 @@ rs5.next();
     </datalist>
     &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
     &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-    <form class="form-inline my-2 my-lg-0">
-      <input list="datalist" class="form-control mr-sm-2" onkeyup="showSuggestions(this.value)" type="text" placeholder="Type a name here" aria-label="Search" required="">
+    <form action="SendRequest" method="get" class="form-inline my-2 my-lg-0">
+      <input name="email" list="datalist" class="form-control mr-sm-2" onkeyup="showSuggestions(this.value)" type="text" placeholder="Type an email here" aria-label="Search" required="">
       <div id="suggestionbox">
       </div>
       <button class="btn navbarsearchbutton my-2 my-sm-0" type="submit">Send Request</button>
