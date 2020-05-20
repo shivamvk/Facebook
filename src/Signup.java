@@ -53,17 +53,17 @@ public class Signup extends HttpServlet {
 				session.setAttribute("sessionLastName", request.getParameter("lastName"));
 				session.setAttribute("sessionEmail", request.getParameter("email"));
 				con.close();
-				File file = new File("C:\\Users\\hp\\eclipse-workspace\\Facebook\\WebContent\\images" + "\\" + request.getParameter("email"));
+				File file = new File("/home/shivamvk/eclipse-workspace/Facebook/WebContent/images/" + request.getParameter("email"));
 				file.mkdir();
 				String path = "";
 				if(request.getParameter("gender").equals("Male")) {
-					path = "C:\\Users\\hp\\eclipse-workspace\\Facebook\\WebContent\\images" + "\\placeholderboy.jpg";
+					path = "/home/shivamvk/eclipse-workspace/Facebook/WebContent/images/" + "placeholderboy.jpg";
 				} else {
-					path = "C:\\Users\\hp\\eclipse-workspace\\Facebook\\WebContent\\images" + "\\placeholdergirl.jpg";
+					path = "/home/shivamvk/eclipse-workspace/Facebook/WebContent/images/" + "placeholdergirl.jpg";
 				}
 				FileInputStream fis = new FileInputStream(path);
-				FileOutputStream fos = new FileOutputStream("C:\\Users\\hp\\eclipse-workspace\\Facebook\\WebContent\\images"
-						+ "\\" + request.getParameter("email") + "\\profilepicture.jpg");
+				FileOutputStream fos = new FileOutputStream("/Facebook/images/"
+						+ request.getParameter("email") + "/profilepicture.jpg");
 				int i;
 				while((i=fis.read())!=-1) {
 					fos.write(i);

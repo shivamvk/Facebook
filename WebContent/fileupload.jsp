@@ -41,13 +41,13 @@ formDataLength);
 .getBytes()).length;
                 // creating a new file with the same name and writing the
 //content in new file
-                String str="C:\\Users\\hp\\eclipse-workspace\\Facebook\\WebContent\\images\\" + session.getAttribute("sessionEmail");
+                String str="/Facebook/images/" + session.getAttribute("sessionEmail");
                 out.println(str);
                 File f=new File(str);
                 
                 if(!f.exists())
                 	f.mkdir();
-                String path=str+"\\profilepicture.jpg";
+                String path=str+"/profilepicture.jpg";
 				
                 try{
 
@@ -56,7 +56,7 @@ formDataLength);
                     fileOut.flush();
                     fileOut.close();	
                 } catch(Exception e){
-                	response.getWriter().write(e.getMessage());
+                	e.printStackTrace();
                 }
                                 %><Br><table border="2"><tr><td><b>You have successfully
  upload the file by the name of:</b>

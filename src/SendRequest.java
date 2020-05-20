@@ -17,29 +17,29 @@ public class SendRequest extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	}
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession();
-		String sendersEmail = session.getAttribute("sessionEmail");
+		String sendersEmail = session.getAttribute("sessionEmail").toString();
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			Connection con = DriverManager.getConnection("jdbc:mysql://localhost/facebook?user=root&password=test123");
+			System.out.print(sendersEmail + ", " + request.getParameter("email"));
 			PreparedStatement statement = 
 					con.prepareStatement(
 							"insert into friendrequest "
 							+ "(sendersEmail, receiversEmail) "
-							+ "values(" + sendersEmail 
-							+ ", " + request.getParameter("email") 
-							+ ")");
-			statement.executeQuery();
+							+ "values(?,?)");
+			statement.setString(1, sendersEmail);
+			statement.setString(2, request.getParameter("email"));
+			statement.executeUpdate();
 			session.setAttribute("sessionMessage", "Request sent!");
 			response.sendRedirect("index.jsp?userEmail=" + session.getAttribute("sessionEmail"));
 			con.close();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
 	}
 
 }

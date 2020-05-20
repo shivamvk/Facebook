@@ -27,7 +27,7 @@ public class AcceptRequest extends HttpServlet {
 			statement.setString(1, request.getParameter("id"));
 			statement.executeUpdate();
 			session.setAttribute("sessionMessage", "You and " + request.getParameter("name") + " are now friends!");
-			response.sendRedirect("index.jsp");
+			response.sendRedirect("index.jsp?userEmail=" + session.getAttribute("sessionEmail"));
 		} catch(Exception e) {
 			
 		}

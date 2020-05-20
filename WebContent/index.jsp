@@ -134,11 +134,12 @@ public ArrayList<String> getFriends(String email, HttpSession session){
 	try{
 		Class.forName("com.mysql.jdbc.Driver");
 		Connection con = DriverManager.getConnection("jdbc:mysql://localhost/facebook?user=root&password=test123");
-		PreparedStatement statement = con.prepareStatement("SELECT * FROM FRIENDREQUEST WHERE (SENDERSEMAIL=? OR RECEIVERSEMAIL=?) AND REQUESTSTATUS='ACCEPTED'");
+		PreparedStatement statement = con.prepareStatement("select * from friendrequest where (sendersEmail=? or receiversEmail=?) and requestStatus='ACCEPTED'");
 		statement.setString(1, email);
 		statement.setString(2, email);
 		ResultSet rs = statement.executeQuery();
 		while(rs.next()){
+			System.out.println("Friends " + rs.getString(2));
 			if(rs.getString(2).equals(email)){
 				friends.add(rs.getString(3));
 			} else {
@@ -348,7 +349,7 @@ rs5.next();
     </datalist>
     &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
     &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-    <form action="SendRequest" method="get" class="form-inline my-2 my-lg-0">
+    <form action="SendRequest" method="post" class="form-inline my-2 my-lg-0">
       <input name="email" list="datalist" class="form-control mr-sm-2" onkeyup="showSuggestions(this.value)" type="text" placeholder="Type an email here" aria-label="Search" required="">
       <div id="suggestionbox">
       </div>
@@ -373,10 +374,10 @@ rs5.next();
 				<!-- SIDEBAR USERPIC -->
 				<div class="profile-userpic text-center">
 				<br>
-					<%String profilepicpath = "images\\"
-					                           + request.getParameter("userEmail") + "\\profilepicture.jpg?" + Math.random(); %>
+					<%String profilepicpath = "/Facebook/images/"
+					                           + request.getParameter("userEmail") + "/profilepicture.jpg?" + Math.random(); %>
 					<img onclick="changedpclicked()" src="<%=profilepicpath %>" class="img-responsive" alt=""><p></p>
-					<div id="changedpbutton">
+					<div id="changedpbutton" onclick="changedpclicked()">
 						<form  ENCTYPE="multipart/form-data" ACTION="fileupload.jsp" METHOD=POST>
 					       <input id="changedpfilebutton" style="display:none;" type="file" name="f1" required>
 					       <input class="btn btn-info btn-sm" type="submit" value="Upload">
